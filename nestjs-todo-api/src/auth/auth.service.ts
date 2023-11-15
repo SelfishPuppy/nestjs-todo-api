@@ -23,6 +23,9 @@ export class AuthService {
           hash,
         },
       });
+      if (user) {
+        return 'User created successfully';
+      }
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002')
