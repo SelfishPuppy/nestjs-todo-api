@@ -26,13 +26,17 @@ export class UserService {
     return this.prisma.user.findMany();
   }
 
-  async updateUser(jwtUser: User, dto: UserDto) {
+  async updateUser(
+    jwtUser: User,
+    dto: UserDto,
+  ): Promise<{ access_token: string }> {
     try {
       const user = await this.prisma.user.update({
         where: { email: jwtUser.email },
         data: dto,
       });
-      return this.authService.signToken(user.id, user.email);
+      const access_token = this.authService.signToken(user.id, user.email);
+      return access_token;
     } catch (error) {
       throw error;
     }
@@ -42,13 +46,17 @@ export class UserService {
     jwtUser: User,
     password: string,
   ): Promise<{ access_token: string }> {
-    const hash = await argon.hash(password);
-    const user = await this.prisma.user.update({
-      where: { email: jwtUser.email },
-      data: { hash: hash },
-    });
-    const access_token = this.authService.signToken(user.id, user.email);
+    try {
+      const hash = await argon.hash(password);
+      const user = await this.prisma.user.update({
+        where: { email: jwtUser.email },
+        data: { hash: hash },
+      });
+      const access_token = this.authService.signToken(user.id, user.email);
 
-    return access_token;
+      return access_token;
+    } catch (error) {
+      throw error;
+    }
   }
 }
